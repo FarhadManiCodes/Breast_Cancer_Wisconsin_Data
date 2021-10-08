@@ -56,6 +56,7 @@ class Node:
             - best column for spliting: {self.best_col}
             - threshold : {self.threshold}
             - {self.criterion} after the split : {self.measure}
+            - size : {len(self.y)}
                     """
         else:
             return "Unprocessed Node"
@@ -97,8 +98,8 @@ class Node:
             X_left = self.X[np.logical_not(ind_right)]
             y_right = self.y[ind_right]
             y_left = self.y[np.logical_not(ind_right)]
-            self.right=Node(X_right, y_right, criterion=self.criterion)
-            self.left=Node(X_left, y_left, criterion=self.criterion)
+            self.nodes=[Node(X_right, y_right, criterion=self.criterion),
+                        Node(X_left, y_left, criterion=self.criterion)]
 
 class DecisionTreeCLF:
     """
@@ -141,12 +142,21 @@ class DecisionTreeCLF:
             X:pd.DataFrame,
             y:np.ndarray):
         depth = 0
+        root = Node(X.to_numpy(),y)
+        N = root
         if self.max_depth:
             max_depth = self.max_depth
         else:
             max_depth = int(log2(len(y)))
+        self.tree=[[root]]
+        
         while (depth < max_depth):
-            N = Node(X.to_numpy(),y)
-            N.find_the_best_feature()
-            print(N)
+            self.tree.append([])
+            for node in self.tree[depth]:
+                if len(node.y) < self.min_sample_split:
+                    warn("can not be splited as it is too small")
+                else:
+                    node.split()
+                    for inernode in node.nodes:
+                        self.tree[depth+1].append(inernode)
             depth += 1
