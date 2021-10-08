@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from math import log2
 from dataclasses import dataclass
+from warnings import warn
 
 @dataclass
 class threshold_result:
@@ -60,12 +61,15 @@ class Node:
             return "Unprocessed Node"
 
     def find_the_best_feature(self):
+        """will find the best feature and its threshold for possible spliting """
         min_measure = 1.0
         best_col = None
         threshold = None
         if self.criterion == "entropy":
             self.entropy = entropy(self.y)
-        if self.entropy > 0:
+        if self.entropy == 0:
+            min_measure = 0
+        else:
             for i,col in enumerate(self.X.T):
                 sorted_ind = np.argsort(col)
                 y_sorted = self.y[sorted_ind]
@@ -79,8 +83,24 @@ class Node:
         self.threshold = threshold
         self.measure = min_measure
         self.processed = True
+    
+    def split(self):
+        """split the node based on its best column"""
+        if not self.processed:
+            self.find_the_best_feature()
+        if self.entropy == 0:
+            warn("the node is pure no need to split")
+            self.nodes= [self]
+        else:
+            ind_right = self.X[:,self.best_col] >= self.threshold
+            X_right = self.X[ind_right]
+            X_left = self.X[np.logical_not(ind_right)]
+            y_right = self.y[ind_right]
+            y_left = self.y[np.logical_not(ind_right)]
+            self.right=Node(X_right, y_right, criterion=self.criterion)
+            self.left=Node(X_left, y_left, criterion=self.criterion)
 
-class DecisionTreeClassifier:
+class DecisionTreeCLF:
     """
     A decision tree classifier.
     """
