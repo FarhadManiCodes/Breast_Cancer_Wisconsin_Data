@@ -3,7 +3,10 @@
 Data Set and Analysis of "Breast Cancer Wisconsin (Diagnostic) Data Set"
 
 ## Clone the git as following:
+
+```console
 git clone https://github.com/FarhadManiCodes/Breast_Cancer_Wisconsin_Data.git
+```
 
 ## Docker
 
